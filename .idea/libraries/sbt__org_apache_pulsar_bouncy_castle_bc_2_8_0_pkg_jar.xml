@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="sbt: org.apache.pulsar:bouncy-castle-bc:2.8.0:pkg:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/AppData/Local/Coursier/cache/v1/https/repo1.maven.org/maven2/org/apache/pulsar/bouncy-castle-bc/2.8.0/bouncy-castle-bc-2.8.0-pkg.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
