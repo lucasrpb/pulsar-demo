@@ -26,7 +26,9 @@ object Main {
 
     val topics = admin.topics()
 
-    topics.createNonPartitionedTopic(s"persistent://public/default/test")
+    //topics.createNonPartitionedTopic(s"persistent://public/default/log4")
+
+    topics.createPartitionedTopic(s"persistent://public/default/log3", 3)
 
     admin.close()
   }
