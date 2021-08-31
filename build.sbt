@@ -10,6 +10,8 @@ libraryDependencies ++= Seq(
 
   "org.apache.pulsar" % "pulsar-client-admin" % "2.8.0",
 
+  "org.conscrypt" % "conscrypt-openjdk" % "2.5.2",
+
   "org.scalactic" %% "scalactic" % "3.2.9",
   "org.scalatest" %% "scalatest" % "3.2.9" % Test
 )

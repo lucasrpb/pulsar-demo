@@ -1,6 +1,7 @@
 package pulsar
 
 import org.apache.pulsar.client.api.PulsarClient
+import org.apache.pulsar.common.policies.data.RetentionPolicies
 import org.slf4j.LoggerFactory
 
 object Main {
@@ -28,7 +29,10 @@ object Main {
 
     //topics.createNonPartitionedTopic(s"persistent://public/default/log4")
 
-    topics.createPartitionedTopic(s"persistent://public/default/log3", 3)
+    //topics.deletePartitionedTopic(topic)
+    //admin.namespaces().createNamespace("public/darwindb")
+    admin.namespaces().setRetention("public/darwindb", new RetentionPolicies(-1, -1))
+    topics.createPartitionedTopic(TOPIC, 3)
 
     admin.close()
   }

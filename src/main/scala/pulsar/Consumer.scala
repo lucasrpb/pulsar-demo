@@ -1,136 +1,97 @@
 package pulsar
 
-import org.apache.pulsar.client.admin.PulsarAdmin
-import org.apache.pulsar.client.api.{Consumer, Message, MessageId, MessageListener, PulsarClient, Reader, ReaderListener, SubscriptionInitialPosition, SubscriptionMode, SubscriptionType}
-import org.apache.pulsar.client.impl.MessageIdImpl
-import org.apache.pulsar.client.internal.DefaultImplementation
-import org.apache.pulsar.common.api.proto.MessageIdData
+import org.apache.pulsar.client.api.{AuthenticationFactory, Consumer, Message, MessageId, MessageListener, PulsarClient, SubscriptionInitialPosition, SubscriptionMode, SubscriptionType}
 
-import java.io.{File, FileInputStream}
 import java.util.UUID
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration.Duration
-import scala.io.StdIn
-import scala.jdk.CollectionConverters.IterableHasAsScala
-import scala.jdk.FutureConverters.CompletionStageOps
-import scala.util.{Failure, Success}
+import java.util.concurrent.ConcurrentLinkedQueue
+import scala.jdk.CollectionConverters._
 
 object Consumer  {
 
   def main(args: Array[String]): Unit = {
 
-    val id = args(0)
-
-    println(s"id: $id\n")
-
     val client = PulsarClient.builder()
-      .serviceUrl(s"pulsar://localhost:6650")
+      .serviceUrl(SERVICE_URL)
+      /*.authentication(
+        AuthenticationFactory.token("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjbGllbnQ7YjBmYWRjYjUtYTg0Ny00MTBlLWFiMGItY2RjZDYzOTQ0MThiO1pHRnlkMmx1WkdJPSJ9.XSUJyWnIs3vl7nBUyOfDvtaueVlvfoIxPVZf16Ne1UxM6pvFTSw1RmuhjSK87udQ-F3kCyZSEx5nJXOCoouxE2mmKDvM6OqWYwUEGcGjmsmmx5_p-Kbz_im3AJ14jSFrjUZ1J5Ly8T3OL3vwAKC1rT3MPIwarqBwJbowNqXEESI1NBI6L6njDNFJLDNOUn7rArk6_OturuqtGPX8_vgTmawB0uonfmmTxXNodewWOxsqEkXNGkOQwJ_KwmUNAcrj7qkY7VVVTdD7H7ykK4A3ipc54o8nuFjHXt_UhgyPFFKNDoIn9r402nYqD359wdX13Qkix9RmOn517b8PfeGZ3A")
+      )*/
+      .allowTlsInsecureConnection(true)
       .build()
 
-    /*val consumer = client.newConsumer()
-      .topic("demo")
-      .consumerName("c0")
-      .subscriptionName("my-sub")
-      .subscriptionMode(SubscriptionMode.Durable)
-      .subscriptionType(SubscriptionType.Exclusive)
-      .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-      .messageListener(new MessageListener[Array[Byte]] {
-        override def received(consumer: Consumer[Array[Byte]], msg: Message[Array[Byte]]): Unit = {
+    var l1 = Seq.empty[String]
+    var l2 = Seq.empty[String]
 
-          println(s"new message: ${new String(msg.getValue)}")
-          consumer.acknowledge(msg.getMessageId)
+    /*val r1 = client.newReader()
+      .topic("darwindb/default/log1")
+      .startMessageId(MessageId.earliest)
+      .create()
 
-        }
-      })
-      .subscribeAsync().get()*/
+    while(r1.hasMessageAvailable){
+      val msg = r1.readNext()
+      l1 = l1 :+ new String(msg.getData)
+    }
 
-    val topic = s"persistent://public/default/log3"
+    val r2 = client.newReader()
+      .topic("darwindb/default/log1")
+      .startMessageId(MessageId.earliest)
+      .create()
 
-    //val file = reflect.io.File("pos")
-
-    /*import org.apache.pulsar.client.admin.PulsarAdmin
-    val url = "http://localhost:8080"
-    // Pass auth-plugin class fully-qualified name if Pulsar-security enabled
-    val authPluginClassName = "pulsar"
-    // Pass auth-param if auth-plugin class requires it
-    val authParams = "param1=value1"
-    val useTls = false
-    val tlsAllowInsecureConnection = true
-    val tlsTrustCertsFilePath = null
-    val admin = PulsarAdmin.builder()
-      //authentication(authPluginClassName, authParams)
-      .serviceHttpUrl(url)
-      .tlsTrustCertsFilePath(tlsTrustCertsFilePath)
-      .allowTlsInsecureConnection(tlsAllowInsecureConnection).build()
-
-    val topics = admin.topics()*/
-
-    val mid =
-    MessageId.earliest
-    // DefaultImplementation.newMessageIdFromByteArray(file.inputStream().readAllBytes())
-     // DefaultImplementation.newMessageIdFromByteArray(topics.getLastMessageId(topic).toByteArray)
-
-    /*val consumer = client.newReader()
-      .topic(topic)
-      .readerName(s"r$id")
-      .subscriptionName(s"sub$id")
-      .startMessageId(mid)
-      .startMessageIdInclusive()
-      .readerListener(new ReaderListener[Array[Byte]] {
-        override def received(reader: Reader[Array[Byte]], msg: Message[Array[Byte]]): Unit = {
-          println(s"${Console.GREEN_B}new message: ${new String(msg.getValue)} id: ${msg.getSequenceId} ${msg.getTopicName}${Console.RESET}")
-        }
-      })
-      .createAsync().get()*/
-    //.create()
-
-    val consumer = client.newConsumer()
-      .topic(topic)
-      .subscriptionName(s"log3-$id")
-      //.subscriptionMode(SubscriptionMode.Durable)
-      .subscriptionType(SubscriptionType.Exclusive)
-      .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
-      .messageListener(new MessageListener[Array[Byte]] {
-        override def received(consumer: Consumer[Array[Byte]], msg: Message[Array[Byte]]): Unit = {
-          println(s"${Console.GREEN_B}new message: ${new String(msg.getValue)} id: ${msg.getSequenceId} ${msg.getTopicName}${Console.RESET}")
-          consumer.acknowledge(msg.getMessageId)
-        }
-      })
-      .subscribeAsync().get()
-
-    //consumer.seek(DefaultImplementation.newMessageIdFromByteArray("id: 520:99:-1:0".getBytes()))
-
-    /*while(true){
-      val msg = consumer.readNext()
-      println(s"${Console.GREEN_B}new message: ${new String(msg.getValue)} id: ${msg.getSequenceId} ${msg.getTopicName}${Console.RESET}")
-     // file.outputStream(false).write(msg.getMessageId.toByteArray)
+    while(r2.hasMessageAvailable){
+      val msg = r2.readNext()
+      l2 = l2 :+ new String(msg.getData)
     }*/
 
-    //consumer.seek(from)
+    val c1 = client.newConsumer()
+      .topic(TOPIC)
+      .subscriptionType(SubscriptionType.Exclusive)
+      .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+      .subscriptionName("c3")
+      .subscribe()
 
-    //StdIn.readLine()
+    while(l1.length < 100){
+      val msg = c1.receive()
+      val str = new String(msg.getData)
 
-    while(true){}
+      println(s"${Console.MAGENTA_B}$str${Console.RESET}")
 
-    consumer.close()
-    client.shutdown()
+      l1 = l1 :+ str
 
-    /*consumer.batchReceiveAsync().asScala.onComplete {
-      case Success(messages) =>
+      //c1.acknowledge(msg.getMessageId)
+    }
 
-        println(messages.asScala.map(s => new String(s.getValue)))
+    val c2 = client.newConsumer()
+      .topic(TOPIC)
+      .subscriptionType(SubscriptionType.Exclusive)
+      .subscriptionInitialPosition(SubscriptionInitialPosition.Earliest)
+      .subscriptionName("c4")
+      .subscribe()
 
-        consumer.close()
-        client.close()
+    while(l2.length < 100){
+      val msg = c2.receive()
+      val str = new String(msg.getData)
 
-      case Failure(ex) =>
+      println(s"${Console.GREEN_B}$str${Console.RESET}")
 
-        ex.printStackTrace()
-        consumer.close()
-        client.close()
+      l2 = l2 :+ str
 
-    }*/
+      //c2.acknowledge(msg.getMessageId)
+    }
+
+    println()
+    println(l1)
+    println()
+
+    println()
+    println(l2)
+    println()
+
+    try {
+      assert(l1 == l2)
+    } finally {
+      c1.close()
+      c2.close()
+      client.close()
+    }
   }
 
 }
